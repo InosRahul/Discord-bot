@@ -19,22 +19,26 @@ const configs = {
 
 var last_char = new Array(getRandomString(1));
 
+
 client.once('ready', message => {
-    var channel = client.channels.cache.find(cname => cname.name === 'word-game')
-    channel.send({embed: {
-    color: 3447003,
-    title: "This is a New Random Word" + " " + last_char,
-    description: "Your word should start from:" +" "+ `${last_char}`,
-    timestamp: new Date(),
-    footer: {
-      text: "WordGame Bot"
-    }
-    }})
+    
 	console.log('REady!');
 });
 
 client.on('message', message => {
     if(message.author.bot) return;
+    if (message.content === ";;start"){
+        var channel = client.channels.cache.find(cname => cname.name === 'word-game')
+        return channel.send({embed: {
+        color: 3447003,
+        title: "This is a New Random Word" + " " + last_char,
+        description: "Your word should start from:" +" "+ `${last_char}`,
+        timestamp: new Date(),
+        footer: {
+          text: "WordGame Bot"
+        }
+        }})
+    }
     if (!/^[a-zA-Z]+$/i.test(message.content) || message.content.length < 2){
         last_char.push(getRandomString(1))
         last_char.shift()
