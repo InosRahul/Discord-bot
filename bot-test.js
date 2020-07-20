@@ -17,48 +17,47 @@ const configs = {
     prefix : process.env.PREFIX
 }
 
-var last_char = new Array(getRandomString(1));
-
-
-client.once('ready', message => {
+client.once('ready', () => {
     
 	console.log('REady!');
 });
 
-client.on('message', message => {
-    if(message.author.bot) return;
-    if (message.content === ";;start"){
-        var channel = client.channels.cache.find(cname => cname.name === 'word-game')
-        return channel.send({embed: {
-        color: 3447003,
-        title: "This is a New Random Word" + " " + last_char,
-        description: "Your word should start from:" +" "+ `${last_char}`,
-        timestamp: new Date(),
-        footer: {
-          text: "WordGame Bot"
-        }
-        }})
-    }
-    if (!/^[a-zA-Z]+$/i.test(message.content) || message.content.length < 2){
-        last_char.push(getRandomString(1))
-        last_char.shift()
-        message.react('❌')
-        return message.reply("Runied it !!" + " " + "Next Word is:" + " " +last_char)
-    }
 
-    var frst = message.content.substring(0,1).toLowerCase()
-    
-    if(last_char[0].toLowerCase() === frst){
-        last_char.push(message.content.replace(/[^\w\s]/gi,'').substring(message.content.length-1));
-        last_char.shift()
-        message.react('💯')
+client.on('message',  message => {
+    if (message.author.bot) return;
+    if (message.content.toLowerCase() === ';;start'){
+        let last_char = getRandomString(1)
+        message.channel.send({embed: {
+            color: 3447003,
+            title: "This is a New Random Word" + " " + last_char,
+            description: "Your word should start from:" +" "+ last_char,
+            timestamp: new Date(),
+            footer: {
+              text: "WordGame Bot"
+            }
+            }});
+        let filter = m => !m.author.bot;
+        let collector = new Discord.MessageCollector(message.channel, filter);
+        collector.on('collect', (message, col) => {
+            // console.log('Collected messages: '+ message.content);
+            let frst = message.content.substring(0,1).toLowerCase()
+            if (!/^[a-zA-Z]+$/i.test(message.content) || message.content.length < 2){
+                last_char = getRandomString(1)
+                message.react('❌')
+                return message.reply("Runied it !!" + " " + "Next Word is:" + " " +last_char)
+            }
+            if(last_char.toLowerCase() === frst){
+                message.react('💯')
+                last_char = message.content.substring(message.content.length - 1)
+                // console.log(last_char)
+            }
+            else{
+                last_char = getRandomString(1)
+                message.react('❌')
+                message.reply("Runied it !!" + " " + "Next Word is:" + " " +last_char)  
+            }
+        });
     }
-    else{
-        last_char.push(getRandomString(1))
-        last_char.shift()
-        message.react('❌')
-        return message.reply("Runied it !!" + " " + "Next Word is:" + " " +last_char)                 
-    }   
 });
 
 client.login(configs.token) // Replace XXXXX with your bot token
