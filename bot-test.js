@@ -18,8 +18,8 @@ const configs = {
 }
 
 client.once('ready', () => {
-    
-	console.log('REady!');
+    client.user.setActivity('WordGame in '+ client.guilds.cache.size + " "+ "Servers")
+	console.log(`${client.user.username} REady!`);
 });
 
 
@@ -37,26 +37,39 @@ client.on('message',  message => {
             }
             }});
         let filter = m => !m.author.bot;
+        let counter = 0
         let collector = new Discord.MessageCollector(message.channel, filter);
-        collector.on('collect', (message, col) => {
-            // console.log('Collected messages: '+ message.content);
-            let frst = message.content.substring(0,1).toLowerCase()
-            if (!/^[a-zA-Z]+$/i.test(message.content) || message.content.length < 2){
-                last_char = getRandomString(1)
-                message.react('❌')
-                return message.reply("Runied it !!" + " " + "Next Word is:" + " " +last_char)
+        collector.on('collect', (msg, col) => {
+            counter++
+            let frst = msg.content.substring(0,1).toLowerCase()
+            
+            if((msg.content.toLowerCase() === ';;stop' && (message.author.id === msg.author.id)) || counter === 100){
+                counter--;
+                collector.stop()
+                msg.reply("Game Stopped at " + counter + " words.")
             }
-            if(last_char.toLowerCase() === frst){
-                message.react('💯')
-                last_char = message.content.substring(message.content.length - 1)
-                // console.log(last_char)
-            }
+            
             else{
+                if (!/^[a-zA-Z]+$/i.test(msg.content) || msg.content.length < 2){
                 last_char = getRandomString(1)
-                message.react('❌')
-                message.reply("Runied it !!" + " " + "Next Word is:" + " " +last_char)  
+                msg.react('❌')
+                return msg.reply("Ruined it !!" + " " + "Next Word is:" + " " +last_char)
+                }
+                if(last_char.toLowerCase() === frst){
+                msg.react('💯')
+                last_char = msg.content.substring(msg.content.length - 1)
+                }
+                else{
+                last_char = getRandomString(1)
+                msg.react('❌')
+                msg.reply("Ruined it !!" + " " + "Next Word is:" + " " +last_char)  
+                }
             }
+            
         });
+        collector.on('end', collected =>{
+            console.log(collected.filter(user => !user.bot).size)
+        })
     }
 });
 
